@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx electron:*)",
+      "Bash(cat:*)",
+      "Bash(node -e:*)",
+      "Bash(./node_modules/.bin/electron:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(1 <<'EOF'\nconst electron = require\\('electron'\\);\nconsole.log\\('electron:', typeof electron\\);\nconsole.log\\('app:', electron.app\\);\nEOF)",
+      "Bash(./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron:*)",
+      "Bash(./node_modules/electron-bin/dist/Electron.app/Contents/MacOS/Electron:*)",
+      "Bash(ELECTRON_MIRROR=\"\" npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(log show --predicate 'subsystem == \"\"com.apple.Console\"\" OR processImagePath CONTAINS \"\"Electron\"\"' --last 1m)",
+      "Bash(node --version:*)",
+      "Bash(nvm list:*)",
+      "Bash(export NVM_DIR=\"$HOME/.nvm\")",
+      "Bash([ -s \"$NVM_DIR/nvm.sh\" ])",
+      "Bash(. \"$NVM_DIR/nvm.sh\")",
+      "Bash(nvm use:*)",
+      "Bash(env)",
+      "Bash(pkill:*)",
+      "Bash(ls:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: TSL UMD Protocol Tester\n\nElectron app for testing TSL UMD protocol over UDP/TCP.\nSupports V3.1, V4.0, and V5.0 with visual tally displays.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

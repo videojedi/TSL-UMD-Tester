@@ -1,0 +1,25 @@
+{
+  "name": "tsl-umd-tester",
+  "version": "1.0.0",
+  "description": "TSL UMD Protocol Tester - Test and diagnose TSL protocol over UDP and TCP",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc && cp src/renderer/index.html dist/renderer/",
+    "start": "npm run build && unset ELECTRON_RUN_AS_NODE && electron .",
+    "dev": "npm run build && unset ELECTRON_RUN_AS_NODE && electron .",
+    "watch": "tsc -w"
+  },
+  "keywords": [
+    "tsl",
+    "umd",
+    "protocol",
+    "tally",
+    "broadcast"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^25.9.8",
+    "typescript": "^5.9.3"
+  }
+}

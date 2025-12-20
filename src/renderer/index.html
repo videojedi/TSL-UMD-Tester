@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+  <title>TSL UMD Protocol Tester</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      height: 100%;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 20px;
+      padding-bottom: 60px;
+      min-height: 100%;
+      overflow-y: auto;
+    }
+    h1 { color: #00d4ff; margin-bottom: 20px; font-size: 24px; }
+    h2 { color: #00d4ff; font-size: 14px; margin-bottom: 10px; }
+    h3 { color: #aaa; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+
+    .main-tabs { display: flex; gap: 0; margin-bottom: 0; }
+    .main-tab {
+      padding: 12px 30px;
+      background: #0f3460;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px 8px 0 0;
+    }
+    .main-tab.active { background: #16213e; color: #00d4ff; }
+    .main-tab-content {
+      display: none;
+      background: #16213e;
+      border-radius: 0 8px 8px 8px;
+      padding: 20px;
+      border: 1px solid #0f3460;
+    }
+    .main-tab-content.active { display: block; }
+
+    .panel { background: #0f3460; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; color: #aaa; font-size: 12px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      background: #1a1a4e;
+      border: 1px solid #2a2a5e;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+    }
+    input[type="number"] {
+      background: #1a1a4e;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #00d4ff; }
+    button {
+      padding: 8px 16px;
+      background: #00d4ff;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    button:hover { background: #00b8e6; }
+    button.danger { background: #ff4757; color: #fff; }
+    button.danger:hover { background: #ff3344; }
+    button.success { background: #2ed573; color: #000; }
+    button:disabled { background: #555; cursor: not-allowed; }
+
+    .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+    .row > div { flex: 1; }
+    .row > div input, .row > div select { margin-bottom: 0; }
+
+    .checkbox-row { display: flex; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
+    .checkbox-row label { display: flex; align-items: center; gap: 5px; color: #fff; }
+    .checkbox-row input[type="checkbox"] { width: auto; margin: 0; }
+
+    /* Tally Display */
+    .tally-display-container { background: #000; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    .tally-display-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .tally-display-header h2 { margin: 0; }
+    .tally-info { font-size: 16px; color: #888; font-weight: bold; }
+
+    .tally-main-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+
+    .tally-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .tally-group-label {
+      font-size: 9px;
+      color: #666;
+      text-transform: uppercase;
+    }
+    .tally-group-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tally-lamp {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #222;
+      border: 2px solid #333;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .tally-lamp.large {
+      width: 40px;
+      height: 40px;
+      border-width: 3px;
+    }
+    .tally-lamp-label {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      color: #555;
+      white-space: nowrap;
+    }
+    .tally-lamp.red { background: #ff4757; box-shadow: 0 0 15px #ff4757; border-color: #ff6b7a; }
+    .tally-lamp.green { background: #2ed573; box-shadow: 0 0 15px #2ed573; border-color: #5ae092; }
+    .tally-lamp.amber { background: #ffa502; box-shadow: 0 0 15px #ffa502; border-color: #ffb732; }
+    .tally-lamp.clickable { cursor: pointer; }
+    .tally-lamp.clickable:hover { transform: scale(1.1); }
+    .umd-display.clickable { cursor: pointer; }
+    .umd-display.clickable:hover { border-color: #00d4ff; }
+
+    .umd-display {
+      flex: 1;
+      padding: 15px 25px;
+      background: #111;
+      border: 3px solid #333;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 24px;
+      text-align: center;
+      letter-spacing: 3px;
+      color: #fff;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .umd-display.red-text { color: #ff4757; text-shadow: 0 0 10px #ff4757; }
+    .umd-display.green-text { color: #2ed573; text-shadow: 0 0 10px #2ed573; }
+    .umd-display.amber-text { color: #ffa502; text-shadow: 0 0 10px #ffa502; }
+    .brightness-0 { opacity: 0.1; }
+    .brightness-1 { opacity: 0.3; }
+    .brightness-2 { opacity: 0.6; }
+    .brightness-3 { opacity: 1; }
+
+    .tally-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #222;
+    }
+
+    /* Sub tabs */
+    .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+    .sub-tab {
+      padding: 6px 14px;
+      background: #1a1a4e;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .sub-tab.active { background: #00d4ff; color: #000; }
+    .sub-tab-content { display: none; }
+    .sub-tab-content.active { display: block; }
+
+    /* Log */
+    .log-container {
+      background: #0a0a1a;
+      border: 1px solid #1a1a4e;
+      border-radius: 4px;
+      height: 300px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 11px;
+    }
+    .log-entry { padding: 6px 10px; border-bottom: 1px solid #1a1a4e; }
+    .log-entry:hover { background: #1a1a3e; }
+    .log-time { color: #666; margin-right: 8px; }
+    .log-source { color: #00d4ff; margin-right: 8px; }
+    .log-received { border-left: 3px solid #2ed573; }
+    .log-sent { border-left: 3px solid #ffa502; }
+    .log-error { border-left: 3px solid #ff4757; }
+    .hex-dump { font-family: 'Monaco', 'Menlo', monospace; font-size: 10px; white-space: pre; color: #666; margin-top: 4px; }
+    .parsed-data { margin-top: 5px; padding: 5px; background: #0f3460; border-radius: 4px; font-size: 10px; }
+
+    /* Status bar */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f3460;
+      padding: 10px 20px;
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+    }
+    .status-item { display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
+    .status-dot.active { background: #2ed573; }
+
+    .connection-bar {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #1a1a4e;
+      border-radius: 4px;
+    }
+    .connection-bar > div { flex: 1; }
+    .connection-bar label { margin-bottom: 3px; }
+    .connection-bar input { margin-bottom: 0; }
+    .connection-bar button { margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>TSL UMD Protocol Tester</h1>
+
+  <div class="main-tabs">
+    <button class="main-tab active" data-tab="server-tab">Server (Receive)</button>
+    <button class="main-tab" data-tab="client-tab">Client (Send)</button>
+  </div>
+
+  <!-- SERVER TAB -->
+  <div id="server-tab" class="main-tab-content active">
+    <!-- Received Tally Display -->
+    <div class="tally-display-container">
+      <div class="tally-display-header">
+        <h2>Received Message</h2>
+        <span class="tally-info" id="server-tally-info">Waiting for data...</span>
+      </div>
+
+      <!-- Main display row -->
+      <div class="tally-main-row">
+        <div class="tally-group">
+          <span class="tally-group-label">Left Display</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp" id="server-ld-lh"><span class="tally-lamp-label">LH</span></div>
+            <div class="tally-lamp" id="server-ld-rh"><span class="tally-lamp-label">RH</span></div>
+          </div>
+        </div>
+
+        <div class="umd-display brightness-3" id="server-umd-display">--</div>
+
+        <div class="tally-group">
+          <span class="tally-group-label">Right Display</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp" id="server-rd-lh"><span class="tally-lamp-label">LH</span></div>
+            <div class="tally-lamp" id="server-rd-rh"><span class="tally-lamp-label">RH</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V3.1 Tally indicators -->
+      <div class="tally-indicators">
+        <div class="tally-group">
+          <span class="tally-group-label">V3.1 Tallies</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp" id="server-t1"><span class="tally-lamp-label">T1</span></div>
+            <div class="tally-lamp" id="server-t2"><span class="tally-lamp-label">T2</span></div>
+            <div class="tally-lamp" id="server-t3"><span class="tally-lamp-label">T3</span></div>
+            <div class="tally-lamp" id="server-t4"><span class="tally-lamp-label">T4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Connection Settings -->
+    <div class="panel">
+      <h3>Connection Settings</h3>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-tab="server-udp">UDP</button>
+        <button class="sub-tab" data-tab="server-tcp">TCP</button>
+      </div>
+      <div id="server-udp" class="sub-tab-content active">
+        <div class="connection-bar">
+          <div>
+            <label>Listen Port</label>
+            <input type="number" id="udp-server-port" value="40001" min="1" max="65535">
+          </div>
+          <button id="udp-server-start" class="success">Start</button>
+          <button id="udp-server-stop" class="danger" disabled>Stop</button>
+        </div>
+      </div>
+      <div id="server-tcp" class="sub-tab-content">
+        <div class="connection-bar">
+          <div>
+            <label>Listen Port</label>
+            <input type="number" id="tcp-server-port" value="40001" min="1" max="65535">
+          </div>
+          <button id="tcp-server-start" class="success">Start</button>
+          <button id="tcp-server-stop" class="danger" disabled>Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Log -->
+    <div class="panel flex-grow">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3>Received Messages</h3>
+        <div>
+          <label style="display: inline-flex; align-items: center; margin-right: 10px;">
+            <input type="checkbox" id="server-auto-scroll" checked style="width: auto; margin-right: 5px;">
+            Auto-scroll
+          </label>
+          <button id="server-clear-log" class="danger" style="padding: 4px 10px; font-size: 11px;">Clear</button>
+        </div>
+      </div>
+      <div class="log-container" id="server-log-container"></div>
+    </div>
+  </div>
+
+  <!-- CLIENT TAB -->
+  <div id="client-tab" class="main-tab-content">
+    <!-- Send Tally Display (Preview) -->
+    <div class="tally-display-container">
+      <div class="tally-display-header">
+        <h2>Message Preview</h2>
+        <span class="tally-info" id="client-tally-info">Configure message below</span>
+      </div>
+
+      <!-- Main display row -->
+      <div class="tally-main-row">
+        <div class="tally-group">
+          <span class="tally-group-label">Left Display</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp clickable" id="client-ld-lh"><span class="tally-lamp-label">LH</span></div>
+            <div class="tally-lamp clickable" id="client-ld-rh"><span class="tally-lamp-label">RH</span></div>
+          </div>
+        </div>
+
+        <div class="umd-display brightness-3 clickable" id="client-umd-display">CAM 1</div>
+
+        <div class="tally-group">
+          <span class="tally-group-label">Right Display</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp clickable" id="client-rd-lh"><span class="tally-lamp-label">LH</span></div>
+            <div class="tally-lamp clickable" id="client-rd-rh"><span class="tally-lamp-label">RH</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V3.1 Tally indicators -->
+      <div class="tally-indicators">
+        <div class="tally-group">
+          <span class="tally-group-label">V3.1 Tallies</span>
+          <div class="tally-group-row">
+            <div class="tally-lamp clickable" id="client-t1"><span class="tally-lamp-label">T1</span></div>
+            <div class="tally-lamp clickable" id="client-t2"><span class="tally-lamp-label">T2</span></div>
+            <div class="tally-lamp clickable" id="client-t3"><span class="tally-lamp-label">T3</span></div>
+            <div class="tally-lamp clickable" id="client-t4"><span class="tally-lamp-label">T4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client Connection Settings -->
+    <div class="panel">
+      <h3>Connection Settings</h3>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-tab="client-udp">UDP</button>
+        <button class="sub-tab" data-tab="client-tcp">TCP</button>
+      </div>
+      <div id="client-udp" class="sub-tab-content active">
+        <div class="connection-bar">
+          <div>
+            <label>Target Host</label>
+            <input type="text" id="udp-target-host" value="127.0.0.1">
+          </div>
+          <div>
+            <label>Target Port</label>
+            <input type="number" id="udp-target-port" value="40001" min="1" max="65535">
+          </div>
+        </div>
+      </div>
+      <div id="client-tcp" class="sub-tab-content">
+        <div class="connection-bar">
+          <div>
+            <label>Target Host</label>
+            <input type="text" id="tcp-target-host" value="127.0.0.1">
+          </div>
+          <div>
+            <label>Target Port</label>
+            <input type="number" id="tcp-target-port" value="40001" min="1" max="65535">
+          </div>
+          <button id="tcp-connect" class="success">Connect</button>
+          <button id="tcp-disconnect" class="danger" disabled>Disconnect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Builder -->
+    <div class="panel">
+      <h3>Message Builder</h3>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-tab="builder-v31">V3.1</button>
+        <button class="sub-tab" data-tab="builder-v40">V4.0</button>
+        <button class="sub-tab" data-tab="builder-v50">V5.0</button>
+        <button class="sub-tab" data-tab="builder-raw">Raw Hex</button>
+      </div>
+
+      <!-- V3.1 Builder -->
+      <div id="builder-v31" class="sub-tab-content active">
+        <div class="row">
+          <div>
+            <label>Address (0-126)</label>
+            <input type="number" id="v31-address" value="0" min="0" max="126">
+          </div>
+          <div>
+            <label>Display Text (16 chars)</label>
+            <input type="text" id="v31-text" value="CAM 1" maxlength="16">
+          </div>
+          <div>
+            <label>Brightness</label>
+            <select id="v31-brightness">
+              <option value="0">Off</option>
+              <option value="1">Low (1/7)</option>
+              <option value="2">Medium (1/2)</option>
+              <option value="3" selected>Full</option>
+            </select>
+          </div>
+        </div>
+        <!-- Hidden controls updated by clicking tally indicators above -->
+        <div style="display: none;">
+          <input type="checkbox" id="v31-tally1">
+          <input type="checkbox" id="v31-tally2">
+          <input type="checkbox" id="v31-tally3">
+          <input type="checkbox" id="v31-tally4">
+        </div>
+        <button id="v31-send-udp">Send UDP</button>
+        <button id="v31-send-tcp">Send TCP</button>
+      </div>
+
+      <!-- V4.0 Builder -->
+      <div id="builder-v40" class="sub-tab-content">
+        <div class="row">
+          <div>
+            <label>Address (0-126)</label>
+            <input type="number" id="v40-address" value="0" min="0" max="126">
+          </div>
+          <div>
+            <label>Display Text (16 chars)</label>
+            <input type="text" id="v40-text" value="CAM 1" maxlength="16">
+          </div>
+          <div>
+            <label>Brightness</label>
+            <select id="v40-brightness">
+              <option value="0">Off</option>
+              <option value="1">Low (1/7)</option>
+              <option value="2">Medium (1/2)</option>
+              <option value="3" selected>Full</option>
+            </select>
+          </div>
+        </div>
+        <!-- Hidden controls updated by clicking tally indicators above -->
+        <div style="display: none;">
+          <select id="v40-ld-lh"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <select id="v40-ld-text"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <select id="v40-ld-rh"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <select id="v40-rd-lh"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <select id="v40-rd-text"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <select id="v40-rd-rh"><option value="0">Off</option><option value="1">Red</option><option value="2">Green</option><option value="3">Amber</option></select>
+          <input type="checkbox" id="v40-tally1">
+          <input type="checkbox" id="v40-tally2">
+          <input type="checkbox" id="v40-tally3">
+          <input type="checkbox" id="v40-tally4">
+        </div>
+        <button id="v40-send-udp">Send UDP</button>
+        <button id="v40-send-tcp">Send TCP</button>
+      </div>
+
+      <!-- V5.0 Builder -->
+      <div id="builder-v50" class="sub-tab-content">
+        <div class="row">
+          <div>
+            <label>Screen Index</label>
+            <input type="number" id="v50-screen" value="0" min="0" max="65535">
+          </div>
+          <div>
+            <label>Display Index</label>
+            <input type="number" id="v50-index" value="0" min="0" max="65534">
+          </div>
+          <div>
+            <label>Brightness</label>
+            <select id="v50-brightness">
+              <option value="0">Off</option>
+              <option value="1">Low</option>
+              <option value="2">Medium</option>
+              <option value="3" selected>Full</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex: 2;">
+            <label>Display Text</label>
+            <input type="text" id="v50-text" value="CAM 1">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <label style="color: #fff;"><input type="checkbox" id="v50-unicode" style="width: auto;"> Unicode</label>
+          </div>
+        </div>
+        <!-- Hidden controls updated by clicking tally indicators above -->
+        <div style="display: none;">
+          <select id="v50-left-tally">
+            <option value="0">Off</option>
+            <option value="1">Red</option>
+            <option value="2">Green</option>
+            <option value="3">Amber</option>
+          </select>
+          <select id="v50-text-tally">
+            <option value="0">Off</option>
+            <option value="1">Red</option>
+            <option value="2">Green</option>
+            <option value="3">Amber</option>
+          </select>
+          <select id="v50-right-tally">
+            <option value="0">Off</option>
+            <option value="1">Red</option>
+            <option value="2">Green</option>
+            <option value="3">Amber</option>
+          </select>
+        </div>
+        <button id="v50-send-udp">Send UDP</button>
+        <button id="v50-send-tcp">Send TCP</button>
+      </div>
+
+      <!-- Raw Hex Builder -->
+      <div id="builder-raw" class="sub-tab-content">
+        <label>Raw Hex Data (space or comma separated)</label>
+        <textarea id="raw-hex" rows="2" placeholder="80 30 43 41 4D 20 31 20 20 20 20 20 20 20 20 20 20 20"></textarea>
+        <button id="raw-send-udp">Send UDP</button>
+        <button id="raw-send-tcp">Send TCP</button>
+        <button id="raw-parse">Parse</button>
+        <div id="raw-parse-result" class="parsed-data" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Client Log -->
+    <div class="panel flex-grow">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3>Sent Messages</h3>
+        <div>
+          <label style="display: inline-flex; align-items: center; margin-right: 10px;">
+            <input type="checkbox" id="client-auto-scroll" checked style="width: auto; margin-right: 5px;">
+            Auto-scroll
+          </label>
+          <button id="client-clear-log" class="danger" style="padding: 4px 10px; font-size: 11px;">Clear</button>
+        </div>
+      </div>
+      <div class="log-container" id="client-log-container"></div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-dot" id="udp-server-status"></span>
+      <span>UDP Server</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="tcp-server-status"></span>
+      <span>TCP Server</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="tcp-client-status"></span>
+      <span>TCP Client</span>
+    </div>
+  </div>
+
+  <script>
+    // Main tab switching
+    document.querySelectorAll('.main-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.main-tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Sub tab switching
+    document.querySelectorAll('.sub-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const parent = tab.closest('.panel');
+        parent.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        parent.querySelectorAll('.sub-tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Tally helper - returns color class or null for 'off'
+    function getTallyClass(value) {
+      const classes = [null, 'red', 'green', 'amber'];
+      return classes[parseInt(value)] || null;
+    }
+
+    // Safe add class helper
+    function addTallyClass(elementId, tallyValue) {
+      const cls = getTallyClass(tallyValue);
+      if (cls) {
+        document.getElementById(elementId).classList.add(cls);
+      }
+    }
+
+    // Update server tally display from received packet
+    function updateServerDisplay(parsed) {
+      if (!parsed) return;
+
+      const umdDisplay = document.getElementById('server-umd-display');
+      const info = document.getElementById('server-tally-info');
+
+      // Reset all lamps
+      ['server-ld-lh', 'server-ld-rh', 'server-rd-lh', 'server-rd-rh',
+       'server-t1', 'server-t2', 'server-t3', 'server-t4'].forEach(id => {
+        document.getElementById(id).className = 'tally-lamp';
+      });
+
+      let text = '', brightness = 3, textTally = 0;
+
+      if (parsed.version === '3.1') {
+        text = parsed.displayText || '';
+        brightness = parsed.brightness;
+        info.textContent = `V3.1 | Addr: ${parsed.address}`;
+
+        // V3.1 tallies (only T1-T4, not Left/Right Display)
+        if (parsed.tally1) document.getElementById('server-t1').classList.add('red');
+        if (parsed.tally2) document.getElementById('server-t2').classList.add('red');
+        if (parsed.tally3) document.getElementById('server-t3').classList.add('red');
+        if (parsed.tally4) document.getElementById('server-t4').classList.add('red');
+
+      } else if (parsed.version === '4.0') {
+        // Get display text directly from parsed object
+        const displayText = parsed.displayText;
+        text = displayText || '';
+        brightness = parsed.brightness;
+        info.textContent = `V4.0 | Addr: ${parsed.address}`;
+
+        // Update display immediately for V4.0
+        umdDisplay.textContent = displayText || '--';
+
+        // V3.1 tallies (parallel outputs)
+        if (parsed.tally1) document.getElementById('server-t1').classList.add('red');
+        if (parsed.tally2) document.getElementById('server-t2').classList.add('red');
+        if (parsed.tally3) document.getElementById('server-t3').classList.add('red');
+        if (parsed.tally4) document.getElementById('server-t4').classList.add('red');
+
+        // V4.0 extended tallies
+        if (parsed.leftDisplay) {
+          addTallyClass('server-ld-lh', parsed.leftDisplay.leftTally);
+          addTallyClass('server-ld-rh', parsed.leftDisplay.rightTally);
+          textTally = parsed.leftDisplay.textTally;
+        }
+        if (parsed.rightDisplay) {
+          addTallyClass('server-rd-lh', parsed.rightDisplay.leftTally);
+          addTallyClass('server-rd-rh', parsed.rightDisplay.rightTally);
+        }
+
+      } else if (parsed.version === '5.0' && parsed.displays && parsed.displays.length > 0) {
+        const disp = parsed.displays[0];
+        text = disp.text || '';
+        brightness = disp.brightness;
+        textTally = disp.textTally;
+        info.textContent = `V5.0 | Screen: ${parsed.screen} | Index: ${disp.index}`;
+
+        // V5.0 uses left display indicators for its single LH/RH tally
+        addTallyClass('server-ld-lh', disp.leftTally);
+        addTallyClass('server-ld-rh', disp.rightTally);
+      }
+
+      umdDisplay.textContent = text || '--';
+      umdDisplay.className = `umd-display brightness-${brightness}`;
+      const textTallyClass = getTallyClass(textTally);
+      if (textTallyClass) {
+        umdDisplay.classList.add(textTallyClass + '-text');
+      }
+    }
+
+    // Update client tally display (preview)
+    function updateClientDisplay() {
+      const umdDisplay = document.getElementById('client-umd-display');
+      const info = document.getElementById('client-tally-info');
+
+      // Reset all lamps (keep clickable class)
+      ['client-ld-lh', 'client-ld-rh', 'client-rd-lh', 'client-rd-rh',
+       'client-t1', 'client-t2', 'client-t3', 'client-t4'].forEach(id => {
+        document.getElementById(id).className = 'tally-lamp clickable';
+      });
+
+      const v31Active = document.getElementById('builder-v31').classList.contains('active');
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      const v50Active = document.getElementById('builder-v50').classList.contains('active');
+
+      let text = '', brightness = 3, textTally = 0;
+
+      if (v31Active) {
+        text = document.getElementById('v31-text').value;
+        brightness = document.getElementById('v31-brightness').value;
+        const addr = document.getElementById('v31-address').value;
+        info.textContent = `V3.1 | Addr: ${addr}`;
+
+        const t1 = document.getElementById('v31-tally1').checked;
+        const t2 = document.getElementById('v31-tally2').checked;
+        const t3 = document.getElementById('v31-tally3').checked;
+        const t4 = document.getElementById('v31-tally4').checked;
+
+        // V3.1 only uses T1-T4 indicators (not Left/Right Display)
+        if (t1) document.getElementById('client-t1').classList.add('red');
+        if (t2) document.getElementById('client-t2').classList.add('red');
+        if (t3) document.getElementById('client-t3').classList.add('red');
+        if (t4) document.getElementById('client-t4').classList.add('red');
+
+      } else if (v40Active) {
+        text = document.getElementById('v40-text').value;
+        brightness = document.getElementById('v40-brightness').value;
+        const addr = document.getElementById('v40-address').value;
+        info.textContent = `V4.0 | Addr: ${addr}`;
+
+        // V4.0 T1-T4 tallies
+        const t1 = document.getElementById('v40-tally1').checked;
+        const t2 = document.getElementById('v40-tally2').checked;
+        const t3 = document.getElementById('v40-tally3').checked;
+        const t4 = document.getElementById('v40-tally4').checked;
+        if (t1) document.getElementById('client-t1').classList.add('red');
+        if (t2) document.getElementById('client-t2').classList.add('red');
+        if (t3) document.getElementById('client-t3').classList.add('red');
+        if (t4) document.getElementById('client-t4').classList.add('red');
+
+        // Left display
+        const ldLh = document.getElementById('v40-ld-lh').value;
+        const ldText = document.getElementById('v40-ld-text').value;
+        const ldRh = document.getElementById('v40-ld-rh').value;
+        addTallyClass('client-ld-lh', ldLh);
+        addTallyClass('client-ld-rh', ldRh);
+        textTally = ldText;
+
+        // Right display
+        const rdLh = document.getElementById('v40-rd-lh').value;
+        const rdRh = document.getElementById('v40-rd-rh').value;
+        addTallyClass('client-rd-lh', rdLh);
+        addTallyClass('client-rd-rh', rdRh);
+
+      } else if (v50Active) {
+        text = document.getElementById('v50-text').value;
+        brightness = document.getElementById('v50-brightness').value;
+        const screen = document.getElementById('v50-screen').value;
+        const index = document.getElementById('v50-index').value;
+        info.textContent = `V5.0 | Screen: ${screen} | Index: ${index}`;
+
+        const leftTally = document.getElementById('v50-left-tally').value;
+        const rightTally = document.getElementById('v50-right-tally').value;
+        textTally = document.getElementById('v50-text-tally').value;
+
+        addTallyClass('client-ld-lh', leftTally);
+        addTallyClass('client-ld-rh', rightTally);
+
+      } else {
+        info.textContent = 'Raw Hex mode';
+        umdDisplay.textContent = 'RAW';
+        return;
+      }
+
+      umdDisplay.textContent = text || '--';
+      umdDisplay.className = `umd-display brightness-${brightness} clickable`;
+      const textTallyClass = getTallyClass(textTally);
+      if (textTallyClass) {
+        umdDisplay.classList.add(textTallyClass + '-text');
+      }
+    }
+
+    // Add listeners for client preview updates
+    ['v31-text', 'v31-brightness', 'v31-address', 'v31-tally1', 'v31-tally2', 'v31-tally3', 'v31-tally4'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateClientDisplay);
+      document.getElementById(id).addEventListener('change', updateClientDisplay);
+    });
+    ['v40-text', 'v40-brightness', 'v40-address', 'v40-ld-lh', 'v40-ld-rh', 'v40-ld-text', 'v40-rd-lh', 'v40-rd-rh', 'v40-rd-text', 'v40-tally1', 'v40-tally2', 'v40-tally3', 'v40-tally4'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateClientDisplay);
+      document.getElementById(id).addEventListener('change', updateClientDisplay);
+    });
+    ['v50-text', 'v50-brightness', 'v50-screen', 'v50-index', 'v50-left-tally', 'v50-right-tally', 'v50-text-tally'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateClientDisplay);
+      document.getElementById(id).addEventListener('change', updateClientDisplay);
+    });
+
+    // Update preview when switching builder tabs
+    document.querySelectorAll('.sub-tab[data-tab^="builder-"]').forEach(tab => {
+      tab.addEventListener('click', () => setTimeout(updateClientDisplay, 10));
+    });
+
+    // Click handlers for client tally indicators
+    // Helper to cycle color values (0 -> 1 -> 2 -> 3 -> 0)
+    function cycleColorValue(selectId) {
+      const select = document.getElementById(selectId);
+      const current = parseInt(select.value);
+      select.value = (current + 1) % 4;
+      updateClientDisplay();
+    }
+
+    // Helper to toggle checkbox
+    function toggleCheckbox(checkboxId) {
+      const checkbox = document.getElementById(checkboxId);
+      checkbox.checked = !checkbox.checked;
+      updateClientDisplay();
+    }
+
+    // V3.1/V4.0 Tally clicks (T1-T4) - works for both V3.1 and V4.0
+    document.getElementById('client-t1').addEventListener('click', () => {
+      const v31Active = document.getElementById('builder-v31').classList.contains('active');
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v31Active) toggleCheckbox('v31-tally1');
+      else if (v40Active) toggleCheckbox('v40-tally1');
+    });
+    document.getElementById('client-t2').addEventListener('click', () => {
+      const v31Active = document.getElementById('builder-v31').classList.contains('active');
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v31Active) toggleCheckbox('v31-tally2');
+      else if (v40Active) toggleCheckbox('v40-tally2');
+    });
+    document.getElementById('client-t3').addEventListener('click', () => {
+      const v31Active = document.getElementById('builder-v31').classList.contains('active');
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v31Active) toggleCheckbox('v31-tally3');
+      else if (v40Active) toggleCheckbox('v40-tally3');
+    });
+    document.getElementById('client-t4').addEventListener('click', () => {
+      const v31Active = document.getElementById('builder-v31').classList.contains('active');
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v31Active) toggleCheckbox('v31-tally4');
+      else if (v40Active) toggleCheckbox('v40-tally4');
+    });
+
+    // Left Display LH tally click (V4.0 and V5.0 only)
+    document.getElementById('client-ld-lh').addEventListener('click', () => {
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      const v50Active = document.getElementById('builder-v50').classList.contains('active');
+      if (v40Active) cycleColorValue('v40-ld-lh');
+      else if (v50Active) cycleColorValue('v50-left-tally');
+    });
+
+    // Left Display RH tally click (V4.0 and V5.0 only)
+    document.getElementById('client-ld-rh').addEventListener('click', () => {
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      const v50Active = document.getElementById('builder-v50').classList.contains('active');
+      if (v40Active) cycleColorValue('v40-ld-rh');
+      else if (v50Active) cycleColorValue('v50-right-tally');
+    });
+
+    // Right Display LH tally click (V4.0 only)
+    document.getElementById('client-rd-lh').addEventListener('click', () => {
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v40Active) cycleColorValue('v40-rd-lh');
+    });
+
+    // Right Display RH tally click (V4.0 only)
+    document.getElementById('client-rd-rh').addEventListener('click', () => {
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      if (v40Active) cycleColorValue('v40-rd-rh');
+    });
+
+    // UMD Display text click - cycles text color
+    document.getElementById('client-umd-display').addEventListener('click', () => {
+      const v40Active = document.getElementById('builder-v40').classList.contains('active');
+      const v50Active = document.getElementById('builder-v50').classList.contains('active');
+      if (v40Active) cycleColorValue('v40-ld-text');
+      else if (v50Active) cycleColorValue('v50-text-tally');
+    });
+
+    // Log functions
+    function addLog(container, autoScrollCheckbox, type, source, message, hexDump, parsed) {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      const time = new Date().toLocaleTimeString();
+      let html = `<span class="log-time">${time}</span>`;
+      html += `<span class="log-source">[${source}]</span>`;
+      html += `<span>${message}</span>`;
+      if (hexDump) html += `<div class="hex-dump">${hexDump}</div>`;
+      if (parsed) html += `<div class="parsed-data"><pre>${JSON.stringify(parsed, null, 2)}</pre></div>`;
+      entry.innerHTML = html;
+      container.appendChild(entry);
+      if (autoScrollCheckbox.checked) container.scrollTop = container.scrollHeight;
+    }
+
+    const serverLogContainer = document.getElementById('server-log-container');
+    const clientLogContainer = document.getElementById('client-log-container');
+    const serverAutoScroll = document.getElementById('server-auto-scroll');
+    const clientAutoScroll = document.getElementById('client-auto-scroll');
+
+    document.getElementById('server-clear-log').addEventListener('click', () => serverLogContainer.innerHTML = '');
+    document.getElementById('client-clear-log').addEventListener('click', () => clientLogContainer.innerHTML = '');
+
+    function setStatus(id, active) {
+      document.getElementById(id).classList.toggle('active', active);
+    }
+
+    // API handlers
+    window.tslApi.onPacketReceived((packet) => {
+      addLog(serverLogContainer, serverAutoScroll, 'received', packet.source, 'Packet received', packet.hexDump, packet.parsed);
+      updateServerDisplay(packet.parsed);
+    });
+
+    window.tslApi.onPacketSent((packet) => {
+      addLog(clientLogContainer, clientAutoScroll, 'sent', 'Sent', 'Packet sent', packet.hexDump, packet.parsed);
+    });
+
+    window.tslApi.onStatusUpdate((status) => {
+      const isServer = status.type.includes('server');
+      addLog(isServer ? serverLogContainer : clientLogContainer,
+             isServer ? serverAutoScroll : clientAutoScroll,
+             'received', status.type, status.status);
+    });
+
+    window.tslApi.onError((error) => {
+      const isServer = error.type.includes('server');
+      addLog(isServer ? serverLogContainer : clientLogContainer,
+             isServer ? serverAutoScroll : clientAutoScroll,
+             'error', error.type, `Error: ${error.message}`);
+    });
+
+    window.tslApi.onTcpClientConnected((connected) => {
+      setStatus('tcp-client-status', connected);
+      document.getElementById('tcp-connect').disabled = connected;
+      document.getElementById('tcp-disconnect').disabled = !connected;
+    });
+
+    // UDP Server
+    document.getElementById('udp-server-start').addEventListener('click', async () => {
+      const port = parseInt(document.getElementById('udp-server-port').value);
+      const result = await window.tslApi.udpServerStart(port);
+      if (result.success) {
+        setStatus('udp-server-status', true);
+        document.getElementById('udp-server-start').disabled = true;
+        document.getElementById('udp-server-stop').disabled = false;
+      }
+    });
+
+    document.getElementById('udp-server-stop').addEventListener('click', async () => {
+      await window.tslApi.udpServerStop();
+      setStatus('udp-server-status', false);
+      document.getElementById('udp-server-start').disabled = false;
+      document.getElementById('udp-server-stop').disabled = true;
+    });
+
+    // TCP Server
+    document.getElementById('tcp-server-start').addEventListener('click', async () => {
+      const port = parseInt(document.getElementById('tcp-server-port').value);
+      const result = await window.tslApi.tcpServerStart(port);
+      if (result.success) {
+        setStatus('tcp-server-status', true);
+        document.getElementById('tcp-server-start').disabled = true;
+        document.getElementById('tcp-server-stop').disabled = false;
+      }
+    });
+
+    document.getElementById('tcp-server-stop').addEventListener('click', async () => {
+      await window.tslApi.tcpServerStop();
+      setStatus('tcp-server-status', false);
+      document.getElementById('tcp-server-start').disabled = false;
+      document.getElementById('tcp-server-stop').disabled = true;
+    });
+
+    // TCP Client
+    document.getElementById('tcp-connect').addEventListener('click', async () => {
+      const host = document.getElementById('tcp-target-host').value;
+      const port = parseInt(document.getElementById('tcp-target-port').value);
+      await window.tslApi.tcpClientConnect(host, port);
+    });
+
+    document.getElementById('tcp-disconnect').addEventListener('click', async () => {
+      await window.tslApi.tcpClientDisconnect();
+    });
+
+    // Send functions
+    async function sendV31(useTcp) {
+      const message = {
+        version: '3.1',
+        address: parseInt(document.getElementById('v31-address').value),
+        tally1: document.getElementById('v31-tally1').checked,
+        tally2: document.getElementById('v31-tally2').checked,
+        tally3: document.getElementById('v31-tally3').checked,
+        tally4: document.getElementById('v31-tally4').checked,
+        brightness: parseInt(document.getElementById('v31-brightness').value),
+        displayText: document.getElementById('v31-text').value
+      };
+      const data = await window.tslApi.buildV31(message);
+      if (useTcp) {
+        await window.tslApi.tcpClientSend(data);
+      } else {
+        const host = document.getElementById('udp-target-host').value;
+        const port = parseInt(document.getElementById('udp-target-port').value);
+        await window.tslApi.udpClientSend(host, port, data);
+      }
+    }
+
+    async function sendV40(useTcp) {
+      const message = {
+        version: '4.0',
+        address: parseInt(document.getElementById('v40-address').value),
+        tally1: document.getElementById('v40-tally1').checked,
+        tally2: document.getElementById('v40-tally2').checked,
+        tally3: document.getElementById('v40-tally3').checked,
+        tally4: document.getElementById('v40-tally4').checked,
+        brightness: parseInt(document.getElementById('v40-brightness').value),
+        displayText: document.getElementById('v40-text').value,
+        leftDisplay: {
+          leftTally: parseInt(document.getElementById('v40-ld-lh').value),
+          textTally: parseInt(document.getElementById('v40-ld-text').value),
+          rightTally: parseInt(document.getElementById('v40-ld-rh').value)
+        },
+        rightDisplay: {
+          leftTally: parseInt(document.getElementById('v40-rd-lh').value),
+          textTally: parseInt(document.getElementById('v40-rd-text').value),
+          rightTally: parseInt(document.getElementById('v40-rd-rh').value)
+        }
+      };
+      const data = await window.tslApi.buildV40(message);
+      if (useTcp) {
+        await window.tslApi.tcpClientSend(data);
+      } else {
+        const host = document.getElementById('udp-target-host').value;
+        const port = parseInt(document.getElementById('udp-target-port').value);
+        await window.tslApi.udpClientSend(host, port, data);
+      }
+    }
+
+    async function sendV50(useTcp) {
+      const message = {
+        version: '5.0',
+        packetByteCount: 0,
+        minorVersion: 0,
+        flags: { unicode: document.getElementById('v50-unicode').checked, screenControl: false },
+        screen: parseInt(document.getElementById('v50-screen').value),
+        displays: [{
+          index: parseInt(document.getElementById('v50-index').value),
+          leftTally: parseInt(document.getElementById('v50-left-tally').value),
+          textTally: parseInt(document.getElementById('v50-text-tally').value),
+          rightTally: parseInt(document.getElementById('v50-right-tally').value),
+          brightness: parseInt(document.getElementById('v50-brightness').value),
+          text: document.getElementById('v50-text').value
+        }]
+      };
+      if (useTcp) {
+        const data = await window.tslApi.buildV50Tcp(message);
+        await window.tslApi.tcpClientSend(data);
+      } else {
+        const data = await window.tslApi.buildV50(message);
+        const host = document.getElementById('udp-target-host').value;
+        const port = parseInt(document.getElementById('udp-target-port').value);
+        await window.tslApi.udpClientSend(host, port, data);
+      }
+    }
+
+    async function sendRawHex(useTcp) {
+      const hexString = document.getElementById('raw-hex').value;
+      const cleanHex = hexString.replace(/[\s,]/g, '');
+      const data = [];
+      for (let i = 0; i < cleanHex.length; i += 2) {
+        data.push(parseInt(cleanHex.substr(i, 2), 16));
+      }
+      if (useTcp) {
+        await window.tslApi.tcpClientSend(data);
+      } else {
+        const host = document.getElementById('udp-target-host').value;
+        const port = parseInt(document.getElementById('udp-target-port').value);
+        await window.tslApi.udpClientSend(host, port, data);
+      }
+    }
+
+    document.getElementById('v31-send-udp').addEventListener('click', () => sendV31(false));
+    document.getElementById('v31-send-tcp').addEventListener('click', () => sendV31(true));
+    document.getElementById('v40-send-udp').addEventListener('click', () => sendV40(false));
+    document.getElementById('v40-send-tcp').addEventListener('click', () => sendV40(true));
+    document.getElementById('v50-send-udp').addEventListener('click', () => sendV50(false));
+    document.getElementById('v50-send-tcp').addEventListener('click', () => sendV50(true));
+    document.getElementById('raw-send-udp').addEventListener('click', () => sendRawHex(false));
+    document.getElementById('raw-send-tcp').addEventListener('click', () => sendRawHex(true));
+
+    document.getElementById('raw-parse').addEventListener('click', async () => {
+      const hexString = document.getElementById('raw-hex').value;
+      const result = await window.tslApi.parseHex(hexString);
+      const resultDiv = document.getElementById('raw-parse-result');
+      resultDiv.style.display = 'block';
+      if (result.success) {
+        resultDiv.innerHTML = `<div class="hex-dump">${result.hexDump}</div><pre>${JSON.stringify(result.parsed, null, 2)}</pre>`;
+      } else {
+        resultDiv.innerHTML = `<span style="color: #ff4757;">Error: ${result.error}</span>`;
+      }
+    });
+
+    // Initial preview
+    updateClientDisplay();
+  </script>
+</body>
+</html>
