@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.svg" width="200" height="200" alt="TSL UMD Tester Logo">
+</p>
+
 # TSL UMD Protocol Tester
 
 An Electron desktop application for testing and diagnosing TSL UMD (Under Monitor Display) protocol communications over UDP and TCP.
