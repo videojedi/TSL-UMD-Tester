@@ -27,7 +27,15 @@
       "Bash(ls:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: TSL UMD Protocol Tester\n\nElectron app for testing TSL UMD protocol over UDP/TCP.\nSupports V3.1, V4.0, and V5.0 with visual tally displays.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: TSL UMD Protocol Tester\n\nElectron app for testing TSL UMD protocol over UDP/TCP.\nSupports V3.1, V4.0, and V5.0 with visual tally displays.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git rm:*)",
+      "Bash(git commit --amend -m \"$\\(cat <<''EOF''\nInitial commit: TSL UMD Protocol Tester\n\nElectron app for testing TSL UMD protocol over UDP/TCP.\nSupports V3.1, V4.0, and V5.0 with visual tally displays.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh repo create:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(qlmanage -t -s 512 -o assets:*)",
+      "Bash(npm run dist:mac:*)",
+      "Bash(npm run dist:win:*)"
     ]
   }
 }

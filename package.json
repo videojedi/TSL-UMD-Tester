@@ -5,9 +5,12 @@
   "main": "dist/main/main.js",
   "scripts": {
     "build": "tsc && cp src/renderer/index.html dist/renderer/",
-    "start": "npm run build && unset ELECTRON_RUN_AS_NODE && electron .",
-    "dev": "npm run build && unset ELECTRON_RUN_AS_NODE && electron .",
-    "watch": "tsc -w"
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "watch": "tsc -w",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win"
   },
   "keywords": [
     "tsl",
@@ -17,9 +20,51 @@
     "broadcast"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "electron": "^25.9.8",
+    "electron-builder": "^26.0.12",
     "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.tsl.umd-tester",
+    "productName": "TSL UMD Tester",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
